@@ -35,6 +35,8 @@ fn main() {
         matriz.push(vector);
     }
 
+    
+
 }
 
 fn iniciar_individuo() -> Vec<f32>{
@@ -60,4 +62,21 @@ fn fun(x: Vec<f32>) -> f32 {
     }
 
     return resultado;
+}
+
+fn posicion_padre_ruleta(x: &Vec<f32>) -> i32 {
+    let t: f32 = x.iter().sum();
+    let r: f32 = rand::thread_rng().gen_range(0.0..t);
+    let mut posicion_padre = 0;
+
+    let mut sum: f32 = 0.0;
+    for i in x {
+        sum += i;
+        if sum >= r {
+            break;
+        }
+        posicion_padre += 1;
+    }
+
+    return posicion_padre;
 }
