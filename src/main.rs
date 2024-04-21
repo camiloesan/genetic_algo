@@ -1,16 +1,53 @@
 use rand::Rng;
 use std::f32::consts::PI;
+use std::io;
 
 fn main() {
-    // inicializacion de poblacion? (10 randoms? entre -5.12 y +5.12)
-    let mut vector: Vec<f32> = Vec::new();
-    for _ in 0..10 {
-        let numero_random = rand::thread_rng().gen_range(-5.12..5.12) as f32;
-        vector.push(numero_random); // bajar presicion a 3 digitos?
+
+    println!("Ingresar el número de individuos de la población:");
+
+    let mut poblacion = String::new();
+
+    io::stdin()
+        .read_line(&mut poblacion)
+        .expect("Error al leer la entrada");
+
+    // Parsear la cadena a un número entero de 32 bits
+    let poblacion_numero: i32 = match poblacion.trim().parse() {
+        Ok(num) => num,
+        Err(_) => {
+            println!("No ingresaste un número válido.");
+            return;
+        }
+    };
+
+    println!("Ingresaste el número: {}", poblacion_numero);
+
+    let mut matriz: Vec<Vec<f32>> = Vec::new();
+
+    for _ in 0..poblacion_numero{
+        let vector = iniciar_individuo();
+        
+        println!("El contenido del vector es: {:?}", vector);
+        let resultado = fun(vector.clone());
+        println!("{}", resultado);
+
+        matriz.push(vector);
     }
 
-    let resultado = fun(vector);
-    println!("{}", resultado)
+}
+
+fn iniciar_individuo() -> Vec<f32>{
+    // inicializacion de individuo no? (10 randoms? entre -5.12 y +5.12)
+    let mut vector: Vec<f32> = Vec::new();
+
+    for _ in 0..10 {
+        let numero_random = rand::thread_rng().gen_range(-5.12..5.12) as f32;
+        let numero_random_redondeado = (numero_random * 1000.0).round() / 1000.0;
+        vector.push(numero_random_redondeado); // bajar presicion a 3 digitos?
+    }
+
+    return vector;
 }
 
 fn fun(x: Vec<f32>) -> f32 {
