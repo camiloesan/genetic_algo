@@ -71,13 +71,21 @@ fn main() {
         matriz.push(vector);
     }
 
-    let mut vec_aptitudes = Vec::new();
-    for i in 0..poblacion_numero {
-        let aptitud = fun(matriz[i].clone());
-        vec_aptitudes.push(aptitud);
-    }
-
     for _ in 0..generaciones_numero{
+        let mut vec_aptitudes = Vec::new();
+
+        for i in 0..poblacion_numero {
+            let aptitud = fun(matriz[i].clone());
+            vec_aptitudes.push(aptitud);
+        }
+
+        // permutar basandose en la aptitud de los individuos
+        let mut criterio_permutacion: Vec<usize> = (0..vec_aptitudes.len()).collect();
+        criterio_permutacion.sort_by(|&a, &b| vec_aptitudes[a].partial_cmp(&vec_aptitudes[b]).unwrap());
+
+        // Aplicar el criterio de permutación a la matriz
+        let matriz_ordenada: Vec<Vec<f32>> = criterio_permutacion.iter().map(|&i| matriz[i].clone()).collect();
+
         print!("NUEVA GENERACIÖN");
 
         let mut matriz_siguiente_generacion: Vec<Vec<f32>> = Vec::new();
@@ -91,7 +99,7 @@ fn main() {
             cruza_blx(padre_1, padre_2, &mut matriz_siguiente_generacion, probabilidad_mutacion_numero, poblacion_numero);
         }
         
-        matriz_siguiente_generacion.push(matriz[0].clone());
+        matriz_siguiente_generacion.push(matriz_ordenada[0].clone());
 
         matriz = matriz_siguiente_generacion;
         
@@ -105,11 +113,17 @@ fn main() {
 
 fn imprimir_matriz(matriz: &Vec<Vec<f32>>) {
     for fila in matriz {
-        for &elemento in fila {
-            print!("{} ", elemento);
-        }
-        println!();
+        imprimir_fila(fila);
+        let resultado = fun(fila.clone());
+        println!("{} ", resultado);
     }
+}
+
+fn imprimir_fila(fila: &[f32]) {
+    for &elemento in fila {
+        print!("{} ", elemento);
+    }
+    println!();
 }
 
 fn cruza_blx(x: Vec<f32>, y: Vec<f32>, matriz: &mut Vec<Vec<f32>>, mutacion:f32, poblacion:usize){
