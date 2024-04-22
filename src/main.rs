@@ -2,6 +2,7 @@ use rand::Rng;
 use std::f32::consts::PI;
 use std::io;
 
+
 fn main() {
     println!("Ingresar el número de individuos de la población:");
 
@@ -37,12 +38,28 @@ fn main() {
         }
     };
 
+    println!("Ingresar el numero de generaciones a generar: ");
+
+    let mut generaciones = String::new();
+
+    io::stdin()
+        .read_line(&mut generaciones)
+        .expect("Error al leer la entrada");
+
+    // Parsear la cadena a un número entero de 32 bits
+    let generaciones_numero: usize = match generaciones.trim().parse() {
+        Ok(num) => num,
+        Err(_) => {
+            println!("No ingresaste un número válido.");
+            return;
+        }
+    };
+
     println!("Ingresaste la población de {} individuos", poblacion_numero);
     println!("Ingresaste la probabilidad de mutar de: {}", probabilidad_mutacion_numero);
-
+    println!("El número de generaciones que tendra seran de: {}", generaciones_numero);
 
     let mut matriz: Vec<Vec<f32>> = Vec::new();
-    let mut resultados_matriz: Vec<f32> = Vec::new();
 
     for _ in 0..poblacion_numero{
         let vector = iniciar_individuo();
@@ -52,7 +69,6 @@ fn main() {
         println!("{}", resultado);
 
         matriz.push(vector);
-        resultados_matriz.push(resultado);
     }
 
     let mut vec_aptitudes = Vec::new();
@@ -61,16 +77,29 @@ fn main() {
         vec_aptitudes.push(aptitud);
     }
 
-    let posicion_padre_1 = posicion_padre_ruleta(&vec_aptitudes) as usize;
-    let posicion_padre_2 = posicion_padre_ruleta(&vec_aptitudes) as usize;
-    let padre_1 = matriz[posicion_padre_1].clone();
-    let padre_2 = matriz[posicion_padre_2].clone();
+    for _ in 0..generaciones_numero{
+        print!("NUEVA GENERACIÖN");
 
-    let mut matriz_siguiente_generacion: Vec<Vec<f32>> = Vec::new();
-    cruza_blx(padre_1, padre_2, &mut matriz_siguiente_generacion, probabilidad_mutacion_numero);
+        let mut matriz_siguiente_generacion: Vec<Vec<f32>> = Vec::new();
+
+        while matriz_siguiente_generacion.len() < poblacion_numero - 1{
+            let posicion_padre_1 = posicion_padre_ruleta(&vec_aptitudes) as usize;
+            let posicion_padre_2 = posicion_padre_ruleta(&vec_aptitudes) as usize;
+            let padre_1 = matriz[posicion_padre_1].clone();
+            let padre_2 = matriz[posicion_padre_2].clone();
+
+            cruza_blx(padre_1, padre_2, &mut matriz_siguiente_generacion, probabilidad_mutacion_numero, poblacion_numero);
+        }
+        
+        matriz_siguiente_generacion.push(matriz[0].clone());
+
+        matriz = matriz_siguiente_generacion;
+        
+
+        imprimir_matriz(&matriz);
+    }
     
-
-    imprimir_matriz(&matriz_siguiente_generacion);
+    print!("Se termino el programa.")
 
 }
 
@@ -83,7 +112,7 @@ fn imprimir_matriz(matriz: &Vec<Vec<f32>>) {
     }
 }
 
-fn cruza_blx(x: Vec<f32>, y: Vec<f32>, matriz: &mut Vec<Vec<f32>>, mutacion:f32){
+fn cruza_blx(x: Vec<f32>, y: Vec<f32>, matriz: &mut Vec<Vec<f32>>, mutacion:f32, poblacion:usize){
     let mut contador = 0;
     let alfa = rand::thread_rng().gen_range(0.00..1.00) as f32;
 
@@ -110,17 +139,24 @@ fn cruza_blx(x: Vec<f32>, y: Vec<f32>, matriz: &mut Vec<Vec<f32>>, mutacion:f32)
 
         let valor_hijo1 = rand::thread_rng().gen_range(valor_minimo..valor_maximo) as f32;
         let valor_hijo2 = rand::thread_rng().gen_range(valor_minimo..valor_maximo) as f32;
+        let valor_hijo1_redondeado = (valor_hijo1 * 100.0).round() / 100.0;
+        let valor_hijo2_redondeado = (valor_hijo2 * 100.0).round() / 100.0;
 
-        hijo1.push(valor_hijo1);
-        hijo2.push(valor_hijo2);
+        hijo1.push(valor_hijo1_redondeado);
+        hijo2.push(valor_hijo2_redondeado);
 
         contador = contador + 1;
     }
+
     hijo1 = mutar(hijo1, mutacion);
     hijo2 = mutar(hijo2, mutacion);
 
-    matriz.push(hijo1);
-    matriz.push(hijo2);
+    if matriz.len() < poblacion - 1{
+        matriz.push(hijo1);
+    }
+    if matriz.len() < poblacion - 1{
+        matriz.push(hijo2);
+    }
 
     return;
 }  
@@ -134,7 +170,9 @@ fn mutar(hijo: Vec<f32>, mutacion: f32) -> Vec<f32> {
 
         if numero_random < mutacion {
             let valor_mutado = rand::thread_rng().gen_range(-5.12..5.12) as f32;
-            hijo_mutado.push(valor_mutado);
+            let valor_mutado_redondeado = (valor_mutado * 100.0).round() / 100.0;
+
+            hijo_mutado.push(valor_mutado_redondeado);
         }
         else {
             hijo_mutado.push(hijo[contador]);
@@ -169,7 +207,7 @@ fn iniciar_individuo() -> Vec<f32>{
 
     for _ in 0..10 {
         let numero_random = rand::thread_rng().gen_range(-5.12..5.12) as f32;
-        let numero_random_redondeado = (numero_random * 1000.0).round() / 1000.0;
+        let numero_random_redondeado = (numero_random * 100.0).round() / 100.0;
         vector.push(numero_random_redondeado);
     }
 
