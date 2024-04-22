@@ -86,7 +86,7 @@ fn main() {
         // Aplicar el criterio de permutación a la matriz
         let matriz_ordenada: Vec<Vec<f32>> = criterio_permutacion.iter().map(|&i| matriz[i].clone()).collect();
 
-        print!("NUEVA GENERACIÖN");
+        println!("NUEVA GENERACIÖN");
 
         let mut matriz_siguiente_generacion: Vec<Vec<f32>> = Vec::new();
 
@@ -106,8 +106,27 @@ fn main() {
 
         imprimir_matriz(&matriz);
     }
-    
-    print!("Se termino el programa.")
+
+    let mut vec_aptitudes = Vec::new();
+
+        for i in 0..poblacion_numero {
+            let aptitud = fun(matriz[i].clone());
+            vec_aptitudes.push(aptitud);
+        }
+
+
+    let mut criterio_permutacion: Vec<usize> = (0..vec_aptitudes.len()).collect();
+    criterio_permutacion.sort_by(|&a, &b| vec_aptitudes[a].partial_cmp(&vec_aptitudes[b]).unwrap());
+
+    // Aplicar el criterio de permutación a la matriz
+    let matriz_ordenada: Vec<Vec<f32>> = criterio_permutacion.iter().map(|&i| matriz[i].clone()).collect();
+    let mejor_vector: Vec<f32> = matriz_ordenada[0].clone();
+    let resultado_mejor = fun(mejor_vector.clone());
+
+    print!("El mejor hijo fue: ");
+    imprimir_fila(&mejor_vector);
+    print!("Con la aptitud siendo: {}", resultado_mejor);
+    println!("Se termino el programa.")
 
 }
 
