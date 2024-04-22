@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 rand = "*"
+plotters = "0.3"

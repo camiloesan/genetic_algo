@@ -1,7 +1,7 @@
 use rand::Rng;
 use std::f32::consts::PI;
 use std::io;
-
+use plotters::prelude::*;
 
 fn main() {
     println!("Ingresar el número de individuos de la población:");
@@ -71,6 +71,7 @@ fn main() {
         matriz.push(vector);
     }
 
+    let mut hist_aptitudes: Vec<f32> = Vec::new();
     for _ in 0..generaciones_numero{
         let mut vec_aptitudes = Vec::new();
 
@@ -86,7 +87,7 @@ fn main() {
         // Aplicar el criterio de permutación a la matriz
         let matriz_ordenada: Vec<Vec<f32>> = criterio_permutacion.iter().map(|&i| matriz[i].clone()).collect();
 
-        println!("NUEVA GENERACIÖN");
+        println!("NUEVA GENERACIÓN");
 
         let mut matriz_siguiente_generacion: Vec<Vec<f32>> = Vec::new();
 
@@ -104,7 +105,17 @@ fn main() {
         matriz = matriz_siguiente_generacion;
         
 
-        imprimir_matriz(&matriz);
+        {
+            let mut min = 0.0;
+            if vec_aptitudes.is_empty() { None } else {
+                min = vec_aptitudes.iter().skip(1).fold(vec_aptitudes[0], |min, &x| if x  < min  { x } else { min });
+                Some(min)
+            };
+            hist_aptitudes.push(min);
+            println!("la aptitud minima es: {}", min);
+        }
+
+        // imprimir_matriz(&matriz);
     }
 
     let mut vec_aptitudes = Vec::new();
@@ -113,7 +124,6 @@ fn main() {
             let aptitud = fun(matriz[i].clone());
             vec_aptitudes.push(aptitud);
         }
-
 
     let mut criterio_permutacion: Vec<usize> = (0..vec_aptitudes.len()).collect();
     criterio_permutacion.sort_by(|&a, &b| vec_aptitudes[a].partial_cmp(&vec_aptitudes[b]).unwrap());
@@ -126,8 +136,9 @@ fn main() {
     print!("El mejor hijo fue: ");
     imprimir_fila(&mejor_vector);
     print!("Con la aptitud siendo: {}", resultado_mejor);
-    println!("Se termino el programa.")
+    println!("Se termino el programa.");
 
+    generar_grafico_aptitud(hist_aptitudes, generaciones_numero as i32, 0).unwrap();
 }
 
 fn imprimir_matriz(matriz: &Vec<Vec<f32>>) {
@@ -257,4 +268,26 @@ fn fun(x: Vec<f32>) -> f32 {
     }
 
     return resultado;
+}
+
+fn generar_grafico_aptitud(hist_aptitudes: Vec<f32>, generaciones: i32, _num_ejecucion: i32) -> Result<(), Box<dyn std::error::Error>> {
+    let root = BitMapBackend::new("images/0.png", (1080, 720)).into_drawing_area();
+    root.fill(&WHITE)?;
+    let mut chart = ChartBuilder::on(&root)
+        .caption("aptitud por generacion", ("sans-serif", 50).into_font())
+        .margin(5)
+        .x_label_area_size(30)
+        .y_label_area_size(30)
+        .build_cartesian_2d(0f32..generaciones as f32, 0f32..300f32)?;
+    chart.configure_mesh().draw()?;
+
+    chart
+        .draw_series(LineSeries::new(
+            hist_aptitudes.iter().enumerate().map(|(x, y)| (x as f32, *y)),
+            &RED,
+        ))?;
+
+    root.present()?;
+
+    Ok(())
 }
