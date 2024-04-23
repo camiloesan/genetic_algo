@@ -52,10 +52,7 @@ fn generar_solucion(
     for _ in 0..poblacion_numero {
         let vector = iniciar_individuo();
 
-        println!("El contenido del vector es: {:?}", vector);
         let resultado = fun(&vector);
-        println!("{}", resultado);
-
         matriz.push(vector);
     }
 
@@ -108,8 +105,6 @@ fn generar_solucion(
             Some(min)
         };
         hist_aptitudes.push(min);
-
-        // imprimir_matriz(&matriz);
     }
 
     let mut vec_aptitudes = Vec::new();
@@ -129,10 +124,13 @@ fn generar_solucion(
     let mejor_vector: Vec<f32> = matriz_ordenada[0].clone();
     let resultado_mejor = fun(&mejor_vector);
 
+    println!("\nMejor matriz");
+    _imprimir_matriz(&matriz);
+
     print!("El mejor hijo fue: ");
     imprimir_fila(&mejor_vector);
-    print!("Con la aptitud siendo: {}", resultado_mejor);
-    println!("Se termino el programa.");
+    println!("Con la aptitud siendo: {}", resultado_mejor);
+    println!("Se termino la ejecución.");
 
     generar_grafico_aptitud(
         hist_aptitudes.clone(),
@@ -232,12 +230,17 @@ fn mutar(hijo: Vec<f32>, mutacion: f32) -> Vec<f32> {
 }
 
 fn posicion_padre_ruleta(x: &Vec<f32>) -> i32 {
-    let t: f32 = x.iter().sum();
+    let mut aptitud_inversa: Vec<f32> = Vec::new();
+    for &aptitud in x {
+        aptitud_inversa.push(1.0 / aptitud); // Calcula el inverso de la aptitud
+    }
+
+    let t: f32 = aptitud_inversa.iter().sum();
     let r: f32 = rand::thread_rng().gen_range(0.0..t);
     let mut posicion_padre = 0;
 
     let mut sum: f32 = 0.0;
-    for i in x {
+    for i in aptitud_inversa {
         sum += i;
         if sum >= r {
             break;
@@ -371,9 +374,10 @@ fn input_parametros() -> (usize, f32, usize) {
 
 fn _imprimir_matriz(matriz: &Vec<Vec<f32>>) {
     for fila in matriz {
+        print!("Gen del vector: ");
         imprimir_fila(fila);
         let resultado = fun(&fila);
-        println!("{} ", resultado);
+        println!("Resultado: {} ", resultado);
     }
 }
 
